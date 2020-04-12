@@ -1,32 +1,16 @@
 # CarND-Path-Planning-Project
 Self-Driving Car Engineer Nanodegree Program
    
-### Simulator.
-You can download the Term3 Simulator which contains the Path Planning Project from the [releases tab (https://github.com/udacity/self-driving-car-sim/releases/tag/T3_v1.2).  
-
-To run the simulator on Mac/Linux, first make the binary file executable with the following command:
-```shell
-sudo chmod u+x {simulator_file_name}
-```
-
-### Goals
+## Goals
 In this project your goal is to safely navigate around a virtual highway with other traffic that is driving +-10 MPH of the 50 MPH speed limit. You will be provided the car's localization and sensor fusion data, there is also a sparse map list of waypoints around the highway. The car should try to go as close as possible to the 50 MPH speed limit, which means passing slower traffic when possible, note that other cars will try to change lanes too. The car should avoid hitting other cars at all cost as well as driving inside of the marked road lanes at all times, unless going from one lane to another. The car should be able to make one complete loop around the 6946m highway. Since the car is trying to go 50 MPH, it should take a little over 5 minutes to complete 1 loop. Also the car should not experience total acceleration over 10 m/s^2 and jerk that is greater than 10 m/s^3.
 
-#### The map of the highway is in data/highway_map.txt
+## Data structure
+### The map of the highway is in data/highway_map.txt
 Each waypoint in the list contains  [x,y,s,dx,dy] values. x and y are the waypoint's map coordinate position, the s value is the distance along the road to get to that waypoint in meters, the dx and dy values define the unit normal vector pointing outward of the highway loop.
 
 The highway's waypoints loop around so the frenet s value, distance along the road, goes from 0 to 6945.554.
 
-## Basic Build Instructions
-
-1. Clone this repo.
-2. Make a build directory: `mkdir build && cd build`
-3. Compile: `cmake .. && make`
-4. Run it: `./path_planning`.
-
-Here is the data provided from the Simulator to the C++ Program
-
-#### Main car's localization Data (No Noise)
+### Main car's localization Data (No Noise)
 
 ["x"] The car's x position in map coordinates
 
@@ -40,7 +24,7 @@ Here is the data provided from the Simulator to the C++ Program
 
 ["speed"] The car's speed in MPH
 
-#### Previous path data given to the Planner
+### Previous path data given to the Planner
 
 //Note: Return the previous list but with processed points removed, can be a nice tool to show how far along
 the path has processed since last time. 
@@ -49,15 +33,24 @@ the path has processed since last time.
 
 ["previous_path_y"] The previous list of y points previously given to the simulator
 
-#### Previous path's end s and d values 
+### Previous path's end s and d values 
 
 ["end_path_s"] The previous list's last point's frenet s value
 
 ["end_path_d"] The previous list's last point's frenet d value
 
-#### Sensor Fusion Data, a list of all other car's attributes on the same side of the road. (No Noise)
+### Sensor Fusion Data, a list of all other car's attributes on the same side of the road. (No Noise)
 
 ["sensor_fusion"] A 2d vector of cars and then that car's [car's unique ID, car's x position in map coordinates, car's y position in map coordinates, car's x velocity in m/s, car's y velocity in m/s, car's s position in frenet coordinates, car's d position in frenet coordinates. 
+
+## Basic Build Instructions
+
+1. Clone this repo.
+2. Make a build directory: `mkdir build && cd build`
+3. Compile: `cmake .. && make`
+4. Run it: `./path_planning`.
+
+Here is the data provided from the Simulator to the C++ Program
 
 ## Details
 
@@ -91,55 +84,90 @@ A really helpful resource for doing this project and creating smooth trajectorie
     cd uWebSockets
     git checkout e94b6e1
     ```
+## Rubic points
 
-## Editor Settings
+1. The code compiles correctly.
+* Code must compile without errors with cmake and make.
 
-We've purposefully kept editor configuration files out of this repo in order to
-keep it as simple and environment agnostic as possible. However, we recommend
-using the following settings:
+No changes in the cmake configuration from the initial repo. Spline file was added in src/spline.h as suggested.
 
-* indent using spaces
-* set tab width to 2 spaces (keeps the matrices in source code aligned)
+2. Valid Trajectories
+* The car is able to drive at least 4.32 miles without incident..
 
-## Code Style
+I could confirm the simulator drove upto 7.77 miles without incidents as shown in the below screenshot.
 
-Please (do your best to) stick to [Google's C++ style guide](https://google.github.io/styleguide/cppguide.html).
+![complete screen 1](images/complete.jpg)
 
-## Project Instructions and Rubric
+* The car drives according to the speed limit.
 
-Note: regardless of the changes you make, your project must be buildable using
-cmake and make!
+No speed limit message was observed during drive.
 
+* Max Acceleration and Jerk are not Exceeded.
 
-## Call for IDE Profiles Pull Requests
+No max jerk message was observed during drive.
 
-Help your fellow students!
+* Car does not have collisions.
 
-We decided to create Makefiles with cmake to keep this project as platform
-agnostic as possible. Similarly, we omitted IDE profiles in order to ensure
-that students don't feel pressured to use one IDE or another.
+No collisions was occured during drive.
 
-However! I'd love to help people get up and running with their IDEs of choice.
-If you've created a profile for an IDE that you think other students would
-appreciate, we'd love to have you add the requisite profile files and
-instructions to ide_profiles/. For example if you wanted to add a VS Code
-profile, you'd add:
+* The car stays in its lane, except for the time between changing lanes.
 
-* /ide_profiles/vscode/.vscode
-* /ide_profiles/vscode/README.md
+The car stays in its lane unless when it changes lane as shown in the below screenshot.
 
-The README should explain what the profile does, how to take advantage of it,
-and how to install it.
+* The car is able to change lanes
 
-Frankly, I've never been involved in a project with multiple IDE profiles
-before. I believe the best way to handle this would be to keep them out of the
-repo root to avoid clutter. My expectation is that most profiles will include
-instructions to copy files to a new location to get picked up by the IDE, but
-that's just a guess.
+The car change lane when the car observed a slow car in front of it (example as below screenshot).
+![lane change](images/lane_change.jpg)
 
-One last note here: regardless of the IDE used, every submitted project must
-still be compilable with cmake and make./
+## Code briefing
 
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
+My main code is from line 100 to line 276. The code consists of three parts below.
 
+1. Prediction (Line 111~)
+
+This part gathers all the environmental information via sensor fusion data.
+I defined three bool variables to understand envrironment around the car.
+
+* car_ahead: is there a car in front of our lane.
+* car_left: is there a car to the right of our lane.
+* car_right: is there a car to the lift of our lane.
+
+I also calulated the target car speed to estimate the target car position by considering latency of the sensor fusion and the current time.
+I configured 30 meters as a parameter to judge the target car in range of our car.
+So, car_ahead will be true if the target car is within 30 meters in front of us. car_left/car_right will be true if the target car is within 30 meters in front and in back of our car in the left/right lane.
+
+2. Behavior planning (Line 151~)
+
+Based on the prediction, I define our car's reaction depending on cars around us, and our car speed.
+The main target situation is to drive the car in the center lane and MAX_SPEED.
+So, I check two points, and define the reaction accordingly.
+
+* is there a car in front of us?
+- Yes, check car presence on our left/right lane, and if there is no car, the car will change the lane. If cars are in both lanes, decrease speed.
+- No, go to next point: speed check.
+* is the car speed at MAX_SPEED?
+  
+3. Trajectory definition (Line 175~)
+
+This code derives the actual trajectory of the car based on the speed and positioning information from the behavior planning and past path points.
+
+Regarding past path points, I used the last two points of the previous trajectory to initialize the spline calculation.
+Then, add three points of the future trajectory: 30, 60, 90 meters ahead of the pathway (s direction).
+The coordinate is transformed from s, d, yaw to x, y coordinates, and then transformed to car local x, y coordinates to ease spline calculation, then derive spline curve.
+
+The previous path points are copied to the new trajectory output.
+The future points are derived by evaluating the spline and transforming the output coordinates to X, Y coordinates. Worth noticing the change in the velocity of the car from line 393 to 398. The speed change is decided on the behavior part of the code, but it is used in that part to increase/decrease speed on every trajectory points instead of doing it for the complete trajectory.
+
+## Reflection
+
+The program successfully let the car drive over 4.32 miles, but I think there is room to improve two points especially.
+
+1. stable speed while a car is in front of us.
+When a car is in front of us and lane change is not possible (heavy traffic situation), my car is repeating decelation and acceleration around 30 meters behind of the car in front of us.
+This is because my program is targeting MAX_SPEED as baseline.
+It may be able to resolve to have another state such as heavy traffic state to control target speed as average speed of cars around us.
+
+2. lane change is not so frequent.
+I looked at the drive by my program, the car is not so frequently making lane change even if I felt the car should be able to make lane change.
+I thought the judgement of the presence of other cars in left/right lane (30 meters in front/back of us) is conservative.
+However, I keep it as it is to prioritize safety.
