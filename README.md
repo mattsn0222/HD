@@ -96,7 +96,7 @@ No changes in the cmake configuration from the initial repo. Spline file was add
 
 I could confirm the simulator drove upto 7.77 miles without incidents as shown in the below screenshot.
 
-![complete_screen_1](images/complete.jpg)
+![complete_screen_1](images/complete.JPG)
 
 * The car drives according to the speed limit.
 
@@ -117,7 +117,7 @@ The car stays in its lane unless when it changes lane as shown in the below scre
 * The car is able to change lanes
 
 The car change lane when the car observed a slow car in front of it (example as below screenshot).
-![lane_change](images/lane_change.jpg)
+![lane_change](images/lane_change.JPG)
 
 ## Code briefing
 
